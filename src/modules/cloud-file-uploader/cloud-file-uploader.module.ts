@@ -1,4 +1,5 @@
-import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
+import { DynamicModule, Module, ModuleMetadata, Type } from '@nestjs/common';
+import { MODULE_METADATA } from '@nestjs/common/constants';
 
 import {
   AWS_FILE_UPLOADER_TOKEN,
@@ -24,6 +25,27 @@ type CloudProviders = {
   exports: [],
 })
 export class CloudFileUploaderModule {
+  static withArray(modules: Array<Type<any>>): DynamicModule {
+    const tokens = modules
+      .map((module) => Reflect.getMetadata(MODULE_METADATA.EXPORTS, module))
+      .reduce((prev, curr) => [...prev, ...curr], []);
+
+    return {
+      module: CloudFileUploaderModule,
+      imports: [...modules],
+      providers: [
+        CloudFileUploaderService,
+        { provide: FILE_UPLOADER_TOKEN, useExisting: CloudFileUploaderService },
+        {
+          provide: FILE_UPLOADERS_TOKEN,
+          useFactory: (...providers) => providers,
+          inject: tokens,
+        },
+      ],
+      exports: [FILE_UPLOADER_TOKEN],
+    };
+  }
+
   static withInfrastructure(
     infrastructure: ModuleMetadata['imports'],
     tokens: symbol[],

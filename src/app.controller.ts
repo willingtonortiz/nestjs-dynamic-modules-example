@@ -17,10 +17,5 @@ export class AppController {
   @Post()
   uploadFile(@Body() body: unknown): Observable<UploadFileResponse> {
     return this.fileUploaders.uploadFile(body);
-    // const observables = this.fileUploaders.map((uploader) =>
-    //   uploader.uploadFile(body),
-    // );
-    // return concat(...observables);
-    // return this.fileUploader.uploadFile(body);
   }
 }
